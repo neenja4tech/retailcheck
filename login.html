@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Sign In – RetailCheck</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+
+body{
+  font-family:'DM Sans',sans-serif;
+  min-height:100vh;
+  background:linear-gradient(135deg,#0f0c29 0%,#1a1040 45%,#0c1a3d 100%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:24px;overflow:hidden;position:relative;
+}
+
+/* Animated grid background */
+.bg-grid{
+  position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:
+    linear-gradient(rgba(99,102,241,.07) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(99,102,241,.07) 1px,transparent 1px);
+  background-size:56px 56px;
+  mask-image:radial-gradient(ellipse 100% 100% at 50% 50%,black 30%,transparent 100%);
+}
+.bg-glow{
+  position:fixed;width:800px;height:800px;
+  background:radial-gradient(circle,rgba(99,102,241,.18) 0%,rgba(6,182,212,.06) 40%,transparent 70%);
+  top:50%;left:50%;transform:translate(-50%,-50%);
+  pointer-events:none;z-index:0;
+}
+
+/* Card */
+.card{
+  position:relative;z-index:1;
+  background:rgba(255,255,255,.05);
+  backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:24px;
+  padding:44px 40px;
+  width:min(440px,100%);
+  box-shadow:0 32px 80px rgba(0,0,0,.5);
+  animation:slideUp .5s cubic-bezier(.22,1,.36,1) both;
+}
+@keyframes slideUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
+
+/* Logo */
+.logo-wrap{text-align:center;margin-bottom:32px}
+.logo-mark{
+  width:60px;height:60px;
+  background:linear-gradient(135deg,#6366f1,#06b6d4);
+  border-radius:18px;display:inline-flex;align-items:center;justify-content:center;
+  font-family:'Unbounded',sans-serif;font-size:22px;font-weight:900;color:#fff;
+  margin-bottom:14px;box-shadow:0 8px 32px rgba(99,102,241,.45);
+}
+.logo-name{
+  font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700;
+  color:#fff;letter-spacing:-.4px;
+}
+.logo-name span{color:#06b6d4}
+.logo-sub{font-size:12.5px;color:rgba(196,181,253,.6);margin-top:4px}
+
+/* Form heading */
+.form-title{
+  font-family:'Unbounded',sans-serif;font-size:17px;font-weight:700;
+  color:#fff;margin-bottom:6px;text-align:center;
+}
+.form-sub{font-size:13px;color:rgba(196,181,253,.55);text-align:center;margin-bottom:24px;line-height:1.5}
+
+/* Fields */
+.field{margin-bottom:16px}
+.field label{
+  display:block;font-size:10.5px;font-weight:700;
+  color:rgba(196,181,253,.7);margin-bottom:7px;
+  letter-spacing:.6px;text-transform:uppercase;
+}
+.field input{
+  width:100%;padding:13px 15px;
+  background:rgba(255,255,255,.07);
+  border:1.5px solid rgba(255,255,255,.1);
+  border-radius:11px;
+  font-family:'DM Sans',sans-serif;font-size:15px;color:#fff;
+  outline:none;transition:border-color .2s,background .2s;
+  -webkit-appearance:none;
+}
+.field input::placeholder{color:rgba(255,255,255,.25)}
+.field input:focus{border-color:#6366f1;background:rgba(99,102,241,.1)}
+.field input.err{border-color:#ef4444;background:rgba(239,68,68,.08)}
+
+/* Sign in button */
+.btn-signin{
+  width:100%;padding:14px;margin-top:6px;
+  background:linear-gradient(135deg,#6366f1,#06b6d4);
+  border:none;border-radius:11px;
+  font-family:'Unbounded',sans-serif;font-size:14px;font-weight:700;color:#fff;
+  cursor:pointer;transition:opacity .2s,transform .15s;
+  box-shadow:0 4px 24px rgba(99,102,241,.4);
+  letter-spacing:-.2px;display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.btn-signin:hover:not(:disabled){opacity:.92;transform:translateY(-1px)}
+.btn-signin:active:not(:disabled){transform:translateY(0)}
+.btn-signin:disabled{opacity:.6;cursor:not-allowed}
+
+/* Spinner */
+.spinner{
+  width:18px;height:18px;border:2.5px solid rgba(255,255,255,.35);
+  border-top-color:#fff;border-radius:50%;
+  animation:spin .7s linear infinite;display:none;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Error box */
+.error-box{
+  background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);
+  border-radius:10px;padding:11px 14px;margin-top:14px;
+  font-size:13px;color:#fca5a5;text-align:center;
+  display:none;line-height:1.5;
+}
+.error-box.show{display:block}
+
+/* Success box */
+.success-box{
+  background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.3);
+  border-radius:10px;padding:11px 14px;margin-top:14px;
+  font-size:13px;color:#6ee7b7;text-align:center;
+  display:none;line-height:1.5;
+}
+.success-box.show{display:block}
+
+/* Divider */
+.divider{
+  display:flex;align-items:center;gap:10px;
+  margin:18px 0;color:rgba(196,181,253,.3);font-size:12px;
+}
+.divider::before,.divider::after{
+  content:'';flex:1;height:1px;background:rgba(255,255,255,.08);
+}
+
+/* Footer links */
+.form-footer{
+  text-align:center;margin-top:20px;font-size:12.5px;
+  color:rgba(196,181,253,.45);line-height:1.8;
+}
+.form-footer a{color:#06b6d4;text-decoration:none;transition:opacity .2s}
+.form-footer a:hover{opacity:.8;text-decoration:underline}
+
+/* Forgot password view */
+.view{display:none}
+.view.active{display:block}
+
+/* Trust strip */
+.trust-strip{
+  display:flex;gap:16px;justify-content:center;flex-wrap:wrap;
+  margin-top:22px;position:relative;z-index:1;
+}
+.trust-item{
+  font-size:11px;color:rgba(196,181,253,.3);
+  display:flex;align-items:center;gap:5px;
+}
+
+/* Back button */
+.btn-back{
+  background:none;border:none;color:#06b6d4;font-family:'DM Sans',sans-serif;
+  font-size:13px;cursor:pointer;padding:0;margin-bottom:16px;
+  display:flex;align-items:center;gap:5px;
+}
+.btn-back:hover{text-decoration:underline}
+
+/* Expired banner */
+.expired-banner{
+  background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);
+  border-radius:10px;padding:12px 14px;margin-bottom:16px;
+  font-size:13px;color:#fca5a5;line-height:1.5;display:none;
+}
+.expired-banner.show{display:block}
+
+@media(max-width:500px){
+  .card{padding:32px 22px;border-radius:18px}
+}
+</style>
+</head>
+<body>
+<div class="bg-grid"></div>
+<div class="bg-glow"></div>
+
+<div class="card">
+  <div class="logo-wrap">
+    <div class="logo-mark">RC</div>
+    <div class="logo-name">Retail<span>Check</span></div>
+    <div class="logo-sub">UK Grocery Compliance Platform</div>
+  </div>
+
+  <!-- ── VIEW: Sign In ── -->
+  <div class="view active" id="view-signin">
+    <div class="form-title">Welcome back</div>
+    <div class="form-sub">Sign in to your RetailCheck account</div>
+
+    <!-- Expired subscription notice -->
+    <div class="expired-banner" id="expired-banner">
+      Your subscription has expired. Please contact
+      <a href="mailto:support@retailcheck.co.uk" style="color:#fca5a5;text-decoration:underline">support@retailcheck.co.uk</a>
+      to renew.
+    </div>
+
+    <div class="field">
+      <label>Email Address</label>
+      <input type="email" id="si-email" placeholder="you@yourstore.co.uk"
+        autocomplete="email"
+        onkeydown="if(event.key==='Enter')document.getElementById('si-pass').focus()">
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="si-pass" placeholder="Your password"
+        autocomplete="current-password"
+        onkeydown="if(event.key==='Enter')signIn()">
+    </div>
+
+    <div style="text-align:right;margin-top:-8px;margin-bottom:16px">
+      <a href="#" onclick="showView('view-forgot');return false"
+        style="font-size:12px;color:#06b6d4;text-decoration:none">
+        Forgot password?
+      </a>
+    </div>
+
+    <button class="btn-signin" id="signin-btn" onclick="signIn()">
+      <span id="signin-label">Sign In</span>
+      <span style="font-size:14px" id="signin-arrow">&#8594;</span>
+      <div class="spinner" id="signin-spinner"></div>
+    </button>
+
+    <div class="error-box" id="signin-error"></div>
+
+    <div class="divider">or</div>
+
+    <div class="form-footer">
+      No account? <a href="index.html#pricing" onclick="window.location.href='index.html';return false">View plans &amp; start free trial</a><br>
+      Need help? <a href="mailto:support@retailcheck.co.uk">support@retailcheck.co.uk</a>
+    </div>
+  </div>
+
+  <!-- ── VIEW: Forgot Password ── -->
+  <div class="view" id="view-forgot">
+    <button class="btn-back" onclick="showView('view-signin')">
+      &#8592; Back to Sign In
+    </button>
+    <div class="form-title">Reset Password</div>
+    <div class="form-sub">Enter your account email and we'll send you a reset link instantly.</div>
+
+    <div class="field">
+      <label>Email Address</label>
+      <input type="email" id="fp-email" placeholder="you@yourstore.co.uk"
+        autocomplete="email"
+        onkeydown="if(event.key==='Enter')sendReset()">
+    </div>
+
+    <button class="btn-signin" id="reset-btn" onclick="sendReset()">
+      <span id="reset-label">Send Reset Link</span>
+      <div class="spinner" id="reset-spinner"></div>
+    </button>
+
+    <div class="error-box"   id="fp-error"></div>
+    <div class="success-box" id="fp-success">
+      &#10003; Password reset email sent! Check your inbox (and spam folder).
+      <br><br>
+      <a href="#" onclick="showView('view-signin');return false" style="color:#06b6d4">Back to Sign In</a>
+    </div>
+  </div>
+
+</div>
+
+<!-- Trust strip -->
+<div class="trust-strip">
+  <div class="trust-item">&#128274; Secure login</div>
+  <div class="trust-item">&#127468;&#127463; UK &amp; FSA compliant</div>
+  <div class="trust-item">&#10003; <a href="index.html" style="color:rgba(196,181,253,.3);text-decoration:none">retailcheck.co.uk</a></div>
+</div>
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="auth.js"></script>
+
+<script>
+// ── Check for ?expired=1 in URL ──
+if (new URLSearchParams(window.location.search).get('expired') === '1') {
+  document.getElementById('expired-banner').classList.add('show');
+}
+
+// ── If already signed in, skip login ──
+(function(){
+  const isConfigured = typeof FIREBASE_CONFIG !== 'undefined' &&
+    FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.apiKey !== 'YOUR_API_KEY';
+  if (!isConfigured) return;
+  initFirebase();
+  firebase.auth().onAuthStateChanged(user => {
+    if (user) window.location.replace('shoplog.html');
+  });
+})();
+
+// ── Switch between views ──
+function showView(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  // Reset states
+  ['signin-error','fp-error','fp-success'].forEach(i => {
+    const el = document.getElementById(i);
+    if (el) el.classList.remove('show');
+  });
+  // Focus first input
+  const input = document.querySelector('#' + id + ' input');
+  if (input) setTimeout(() => input.focus(), 60);
+}
+
+// ── Sign In ──
+async function signIn() {
+  const email = document.getElementById('si-email').value.trim();
+  const pass  = document.getElementById('si-pass').value;
+  const errEl = document.getElementById('signin-error');
+  errEl.classList.remove('show');
+
+  // Basic validation
+  if (!email) {
+    errEl.textContent = 'Please enter your email address.';
+    errEl.classList.add('show');
+    document.getElementById('si-email').classList.add('err');
+    document.getElementById('si-email').focus();
+    return;
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    errEl.textContent = 'Please enter a valid email address.';
+    errEl.classList.add('show');
+    document.getElementById('si-email').classList.add('err');
+    document.getElementById('si-email').focus();
+    return;
+  }
+  if (!pass) {
+    errEl.textContent = 'Please enter your password.';
+    errEl.classList.add('show');
+    document.getElementById('si-pass').focus();
+    return;
+  }
+
+  // Clear field errors
+  document.getElementById('si-email').classList.remove('err');
+  document.getElementById('si-pass').classList.remove('err');
+
+  // Loading state
+  setSigninLoading(true);
+
+  // Check if Firebase is configured
+  const isConfigured = typeof FIREBASE_CONFIG !== 'undefined' &&
+    FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.apiKey !== 'YOUR_API_KEY';
+
+  if (!isConfigured) {
+    // ── Dev/demo fallback ──
+    setSigninLoading(false);
+    errEl.textContent = 'Firebase is not yet configured. To use the live login, fill in firebase-config.js. For demo access, use the direct shoplog.html link.';
+    errEl.classList.add('show');
+    return;
+  }
+
+  // ── Firebase sign in ──
+  const result = await rcSignIn(email, pass);
+  setSigninLoading(false);
+
+  if (result.ok) {
+    // Cache profile in sessionStorage so shoplog can use it immediately
+    if (result.profile) {
+      sessionStorage.setItem('rc_profile', JSON.stringify(result.profile));
+    }
+    // Redirect to app
+    window.location.replace('shoplog.html');
+  } else {
+    // Show friendly error
+    if (result.code === 'subscription-expired') {
+      document.getElementById('expired-banner').classList.add('show');
+    } else {
+      errEl.textContent = rcAuthError(result.code);
+      errEl.classList.add('show');
+    }
+    document.getElementById('si-pass').value = '';
+    document.getElementById('si-pass').focus();
+  }
+}
+
+// ── Loading state helper ──
+function setSigninLoading(on) {
+  const btn     = document.getElementById('signin-btn');
+  const label   = document.getElementById('signin-label');
+  const arrow   = document.getElementById('signin-arrow');
+  const spinner = document.getElementById('signin-spinner');
+  btn.disabled     = on;
+  label.textContent = on ? 'Signing in...' : 'Sign In';
+  arrow.style.display   = on ? 'none' : '';
+  spinner.style.display = on ? 'block' : 'none';
+}
+
+// ── Send Password Reset ──
+async function sendReset() {
+  const email = document.getElementById('fp-email').value.trim();
+  const errEl = document.getElementById('fp-error');
+  const sucEl = document.getElementById('fp-success');
+  errEl.classList.remove('show');
+  sucEl.classList.remove('show');
+
+  if (!email) {
+    errEl.textContent = 'Please enter your email address.';
+    errEl.classList.add('show');
+    document.getElementById('fp-email').focus();
+    return;
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    errEl.textContent = 'Please enter a valid email address.';
+    errEl.classList.add('show');
+    document.getElementById('fp-email').focus();
+    return;
+  }
+
+  const btn = document.getElementById('reset-btn');
+  const lbl = document.getElementById('reset-label');
+  const spn = document.getElementById('reset-spinner');
+  btn.disabled = true;
+  lbl.textContent = 'Sending...';
+  spn.style.display = 'block';
+
+  const isConfigured = typeof FIREBASE_CONFIG !== 'undefined' &&
+    FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.apiKey !== 'YOUR_API_KEY';
+
+  let result;
+  if (isConfigured) {
+    result = await rcResetPassword(email);
+  } else {
+    // Fallback: open mailto
+    const sub = encodeURIComponent('RetailCheck Password Reset');
+    const body = encodeURIComponent('Hello,\n\nPlease reset the password for my RetailCheck account.\n\nEmail: ' + email + '\n\nThank you.');
+    window.open('mailto:support@retailcheck.co.uk?subject=' + sub + '&body=' + body);
+    result = { ok: true };
+  }
+
+  btn.disabled = false;
+  lbl.textContent = 'Send Reset Link';
+  spn.style.display = 'none';
+
+  if (result.ok) {
+    sucEl.classList.add('show');
+  } else {
+    errEl.textContent = result.message || 'Could not send reset email. Please try again.';
+    errEl.classList.add('show');
+  }
+}
+
+// ── Clear field error on typing ──
+['si-email','si-pass','fp-email'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('input', () => el.classList.remove('err'));
+});
+</script>
+</body>
+</html>
